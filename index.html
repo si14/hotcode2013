@@ -1,0 +1,331 @@
+<!doctype html>
+<html lang="en">
+
+  <head>
+	<meta charset="utf-8">
+
+	<title>core.logic и Clojure
+    </title>
+
+	<meta name="description" content="Slides for HotCode 2013 talk">
+	<meta name="author" content="Dmitry Groshev">
+
+	<meta name="apple-mobile-web-app-capable" content="yes" />
+	<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+	<link rel="stylesheet" href="css/reveal.css">
+	<!--
+        <link rel="stylesheet" href="css/theme/default.css" id="theme"> -->
+	<link rel="stylesheet" href="css/theme/serif.css" id="theme">
+
+	<!-- For syntax highlighting -->
+	<!-- <link rel="stylesheet" href="lib/css/zenburn.css"> -->
+	<link rel="stylesheet" href="lib/css/hemisu-light.css">
+
+	<!-- If the query includes 'print-pdf', use the PDF print sheet -->
+	<!-- <script> -->
+	<!--   document.write( ' -->
+    <!--   <link rel="stylesheet" href="css/print/' + ( window.location.search.match( /print-pdf/gi ) ? 'pdf' : 'paper' ) + '.css" type="text/css" media="print">' ); -->
+	<!-- </script> -->
+
+	<!--[if lt IE 9]>
+		<script src="lib/js/html5shiv.js">
+        </script>
+		<![endif]-->
+  </head>
+
+  <body>
+
+	<div class="reveal">
+
+	  <!-- Any section element inside of this container is displayed as a slide -->
+	  <div class="slides">
+
+		<section>
+		  <h1>core.logic</h1>
+		  <h3>Логическое программирование и Clojure</h3>
+		  <p>
+			<small>Дмитрий Грошев (<a href="http://twitter.com/lambdadmitry">@lambdadmitry</a>)</small>
+		  </p>
+		</section>
+
+        <section>
+          <section><h1>Clojure: очень коротко</h1></section>
+          <section>
+            <pre><code data-trim class="no-highlight large">
+f(a, b) → (f a b)
+            </code></pre>
+          </section>
+          <section>
+            <pre><code class="clojure large" data-trim>
+(def vec [ 1 2 3]) ; вектор
+            </code></pre>
+          </section>
+          <section>
+            <pre><code class="clojure large" data-trim>
+(def vec-kw [:a :b :c]) ; вектор keyword'ов
+            </code></pre>
+          </section>
+          <section>
+            <pre><code class="clojure large" data-trim>
+(defn add-one [x] (+ x 1)) ; функция
+(add-one 41) ; 42
+            </code></pre>
+          </section>
+        </section>
+
+        <section>
+          <h1>core.logic</h1>
+          <ul>
+            <li>реализация miniKanren
+            <li>=&gt; interleaved поиск (больше программ завершаются)
+            <li>фокус на performance и интеграции с «обычным» кодом
+          </ul>
+        </section>
+
+        <section><h1>О понятиях</h1></section>
+
+        <section>
+          <section>
+            <h2>Logic variable</h2>
+            <ul>
+              <li>обозначает «какое-то» значение
+              <li>возможно, значение «любое значение»
+            </ul>
+            <pre><code class="no-highlight large" data-trim data-noescape>
+[:a :b _0] ← третий элемент любой
+[_0 _0 _0] ← три любых <b>одинаковых</b> значения
+[_0 _1 _2] ← три любых значения
+            </code></pre>
+          </section>
+          <section>
+            <h2>Logic variable</h2>
+            fresh предоставляет «свежие» переменные:
+            <pre><code class="clojure large" data-trim data-noescape>
+(fresh [x y z] …)
+            </code></pre>
+          </section>
+        </section>
+
+        <section>
+          <h2>run/run*</h2>
+          <ul>
+            <li>точка входа core.logic
+            <li>(run N …) возвращает [0…N] значений
+            <li>(run* …) возвращает [0…∞] значений
+          </ul>
+        </section>
+
+        <section>
+          <section>
+            <h2>Goal</h2>
+            Почти функция:
+            <pre><code class="no-highlight large" data-trim>
+(f  &args) → result
+(f° &args) → success/failure
+            </code></pre>
+          </section>
+          <section>
+            <h2>Goal</h2>
+            <pre><code class="no-highlight large" data-trim>
+(+  1 2) → 3
+(+° 1 2 3) → success
+(+° 1 2 4) → failure
+(+° 2 2 4) → success
+            </code></pre>
+          </section>
+          <section>
+            <h2>Goal</h2>
+            Преобразование функции в goal:
+            <pre><code class="no-highlight large" data-trim>
+(f  &args) → result
+(f° &args result)
+            </code></pre>
+            success, когда result = (f &args) и failure в обратном случае
+          </section>
+          <section>
+            <h2>Goal</h2>
+            <pre><code class="clojure large" data-trim>
+(+ 1 2) ; 3
+(run* [q] (fd/+ 1 2 q)) ; (3)
+            </code></pre>
+          </section>
+          <section>
+            <h2>Goal</h2>
+            Больше, чем функция:
+            <pre><code class="clojure large" data-trim>
+(run* [q] (fd/+ 1 q 3)) ; (2)
+            </code></pre>
+            <ul>
+              <li>goal — ограничение на аргументы
+              <li>core.logic эффективно ищет удовлетворяющие значения
+            </ul>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h2>Unification</h2>
+            Программы на core.logic не выполняются, а <em>унифицируются</em>
+          </section>
+          <section>
+            <h2>Unification</h2>
+            <pre><code class="no-highlight large" data-trim>
+(== q [a b])
+  → q ~ ([_0 _1])
+            </code></pre>
+          </section>
+          <section>
+            <h2>Unification</h2>
+            <pre><code class="no-highlight large" data-trim>
+(== a b)
+(== q [a b])
+  → q ~ ([_0 _0])
+            </code></pre>
+          </section>
+          <section>
+            <h2>Unification</h2>
+            <pre><code class="no-highlight large" data-trim>
+(== a b)
+(== a 1)
+(== q [a b])
+  → q ~ ([1 1])
+            </code></pre>
+          </section>
+          <section>
+            <h2>Unification</h2>
+            Порядок не важен:
+            <pre><code class="no-highlight large" data-trim>
+(== q [a b])
+(== a 1)
+(== a b)
+  → q ~ ([1 1])
+            </code></pre>
+            Это не «присваивание», а <em>ограничение</em>.
+          </section>
+          <section>
+            <h2>Unification</h2>
+            Сложность и вложенность могут быть любыми:
+            <pre><code class="clojure large" data-trim>
+(run* [q]
+  (fresh [x y]
+    (== y :a)
+    (== q [x [1 y 3] x])))
+;; ([_0 [1 :a 3] _0])
+            </code></pre>
+          </section>
+        </section>
+
+        <section>
+          <section>
+            <h1>conde</h1>
+            Когда вариантов более одного:
+            <pre><code class="clojure large" data-trim>
+(run* [q]
+  (conde
+     [(== q 1)]
+     [(== q 2)]))
+;;(1 2)
+            </code></pre>
+          </section>
+          <section>
+            <h1>conde</h1>
+            <pre><code class="clojure large" data-trim>
+(run 1 [q]
+  (conde
+     [(== q 1)]
+     [(== q 2)]))
+;;(1) — порядок не определён
+            </code></pre>
+          </section>
+          <section>
+            <h1>conde</h1>
+            О бесконечности:
+            <pre><code class="clojure large" data-trim>
+(run 1 [q] (membero 1 q))
+;; ((1 . _0))
+            </code></pre>
+          </section>
+          <section>
+            <h1>conde</h1>
+            О бесконечности:
+            <pre><code class="clojure large" data-trim>
+(run 2 [q] (membero 1 q))
+;; ((1 . _0)
+;;  (_0 1 . _1))
+            </code></pre>
+          </section>
+          <section>
+            <h1>conde</h1>
+            О бесконечности:
+            <pre><code class="clojure large" data-trim>
+(run 3 [q] (membero 1 q))
+;; ((1 . _0)
+;;  (_0 1 . _1)
+;;  (_0 _1 1 . _2))
+
+(run* [q] (membero 1 q))  ; не завершается
+            </code></pre>
+            Внутри — conde+рекурсия
+          </section>
+        </section>
+
+        <section>
+          finite domains
+        </section>
+
+        <section>
+          идеальная сочетаемость: порядок не важен
+        </section>
+
+        <section>
+          <h1>Пример: packeto</h1>
+          kibit
+          webdriver-logic
+          monotony
+        </section>
+
+        <section>
+          <h1>Пример: деревья разбора для CFG</h1>
+        </section>
+
+
+	  </div>
+
+	</div>
+
+	<script src="lib/js/head.min.js"></script>
+	<script src="js/reveal.min.js"></script>
+
+	<script>
+
+	  // Full list of configuration options available here:
+	  // https://github.com/hakimel/reveal.js#configuration
+	  Reveal.initialize({
+	  controls: true,
+	  progress: true,
+	  history: true,
+	  center: true,
+
+	  theme: Reveal.getQueryHash().theme, // available themes are in /css/theme
+	  transition: Reveal.getQueryHash().transition || 'default', // default/cube/page/concave/zoom/linear/fade/none
+
+	  // Optional libraries used to extend on reveal.js
+	  dependencies: [
+	  { src: 'lib/js/classList.js', condition: function() { return !document.body.classList; } },
+	  { src: 'plugin/markdown/marked.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+	  { src: 'plugin/markdown/markdown.js', condition: function() { return !!document.querySelector( '[data-markdown]' ); } },
+	  { src: 'plugin/highlight/highlight.js', async: true, callback: function() {  hljs.initHighlightingOnLoad(); } },
+	  { src: 'plugin/zoom-js/zoom.js', async: true, condition: function() { return !!document.body.classList; } },
+	  { src: 'plugin/notes/notes.js', async: true, condition: function() { return !!document.body.classList; } }
+	  // { src: 'plugin/search/search.js', async: true, condition: function() { return !!document.body.classList; } }
+	  // { src: 'plugin/remotes/remotes.js', async: true, condition: function() { return !!document.body.classList; } }
+	  ]
+	  });
+
+	</script>
+
+  </body>
+</html>
