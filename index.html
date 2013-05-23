@@ -52,6 +52,44 @@
 		</section>
 
         <section>
+          <section><h1>Вступление</h1></section>
+          <section>
+            <h2>Логическое программирование</h2>
+            <ul>
+              <li>(бес)конечное множество возможных решений
+              <li>набор ограничений
+            </ul>
+          </section>
+          <section>
+            <h2>Например:</h2>
+            <ul>
+              <li>генерация непротиворечивого конфига
+              <li>разбор бинарных пакетов
+              <li>тестирование
+            </ul>
+            <p>Дальше — больше</p>
+          </section>
+          <section>
+            <h2>В докладе:</h2>
+            <ul>
+              <li>много нового
+              <li>мало сложного
+              <li>много примеров
+              <li>мало robust turn-key enterprise-grade scalable massively parallel fault-resistant REST NoSQL JS solutions
+            </ul>
+          </section>
+          <section>
+            <h2>План:</h2>
+            <ul>
+              <li>коротко о Clojure
+              <li>основные понятия core.logic
+              <li>примеры библиотек с core.logic внутри
+              <li>генерация деревьев разбора с core.logic
+            </ul>
+          </section>
+        </section>
+
+        <section>
           <section><h1>Clojure: очень коротко</h1></section>
           <section>
             <pre><code data-trim class="no-highlight large">
@@ -80,7 +118,7 @@ f(a, b) → (f a b)
           <h1>core.logic</h1>
           <ul>
             <li>реализация miniKanren
-            <li>=&gt; interleaved поиск (больше программ завершаются)
+            <li>=&gt; interleaved поиск (больше программ завершаются) FIXME (больше)
             <li>фокус на performance и интеграции с «обычным» кодом
           </ul>
         </section>
@@ -102,7 +140,7 @@ f(a, b) → (f a b)
           </section>
           <section>
             <h2>Logic variable</h2>
-            fresh предоставляет «свежие» переменные:
+            <p>fresh предоставляет «свежие» переменные:</p>
             <pre><code class="clojure large" data-trim data-noescape>
 (fresh [x y z] …)
             </code></pre>
@@ -113,19 +151,32 @@ f(a, b) → (f a b)
           <h2>run/run*</h2>
           <ul>
             <li>точка входа core.logic
-            <li>(run N …) возвращает [0…N] значений
-            <li>(run* …) возвращает [0…∞] значений
+            <li>(run N [q] …) возвращает [0…N] значений q
+            <li>(run* [q] …) возвращает [0…∞) значений q
+          </ul>
+        </section>
+
+        <section>
+          <h2>Об именах</h2>
+          <p>Если не указано обратное:</p>
+          <ul>
+          <li>q — «спрашиваемая»
+          <li>a/b/c/x/y/z/… — «свежие»
           </ul>
         </section>
 
         <section>
           <section>
             <h2>Goal</h2>
-            Почти функция:
+            <p>Почти обычная функция:</p>
             <pre><code class="no-highlight large" data-trim>
 (f  &args) → result
 (f° &args) → success/failure
             </code></pre>
+            <ul>
+              <li>результат всегда либо success, либо failure
+              <li>традиционно имеет постфикс °: goal°
+            </ul>
           </section>
           <section>
             <h2>Goal</h2>
@@ -138,12 +189,12 @@ f(a, b) → (f a b)
           </section>
           <section>
             <h2>Goal</h2>
-            Преобразование функции в goal:
+            <p>Преобразование функции в goal:</p>
             <pre><code class="no-highlight large" data-trim>
 (f  &args) → result
 (f° &args result)
             </code></pre>
-            success, когда result = (f &args) и failure в обратном случае
+            <p>success, когда result = (f &args) и failure в обратном случае</p>
           </section>
           <section>
             <h2>Goal</h2>
@@ -154,7 +205,7 @@ f(a, b) → (f a b)
           </section>
           <section>
             <h2>Goal</h2>
-            Больше, чем функция:
+            <p>Больше, чем функция:</p>
             <pre><code class="clojure large" data-trim>
 (run* [q] (fd/+ 1 q 3)) ; (2)
             </code></pre>
@@ -168,7 +219,24 @@ f(a, b) → (f a b)
         <section>
           <section>
             <h2>Unification</h2>
-            Программы на core.logic не выполняются, а <em>унифицируются</em>
+            <ul>
+              <li>ограничение вида «a = b»
+              <li>фундаментальный блок core.logic
+            </ul>
+          </section>
+          <section>
+            <h2>Unification</h2>
+            <pre><code class="no-highlight large" data-trim>
+(== q 1)
+  → q ~ (1)
+            </code></pre>
+          </section>
+          <section>
+            <h2>Unification</h2>
+            <pre><code class="no-highlight large" data-trim>
+(== q a)
+  → q ~ (_0)
+            </code></pre>
           </section>
           <section>
             <h2>Unification</h2>
@@ -196,18 +264,18 @@ f(a, b) → (f a b)
           </section>
           <section>
             <h2>Unification</h2>
-            Порядок не важен:
+            <p>Порядок не важен:</p>
             <pre><code class="no-highlight large" data-trim>
 (== q [a b])
 (== a 1)
 (== a b)
   → q ~ ([1 1])
             </code></pre>
-            Это не «присваивание», а <em>ограничение</em>.
+            <p>Это не «присваивание», а <em>ограничение</em> (== это goal)</p>
           </section>
           <section>
             <h2>Unification</h2>
-            Сложность и вложенность могут быть любыми:
+            <p>Сложность и вложенность могут быть любыми:</p>
             <pre><code class="clojure large" data-trim>
 (run* [q]
   (fresh [x y]
@@ -221,7 +289,7 @@ f(a, b) → (f a b)
         <section>
           <section>
             <h1>conde</h1>
-            Когда вариантов более одного:
+            <p>Когда вариантов более одного:</p>
             <pre><code class="clojure large" data-trim>
 (run* [q]
   (conde
@@ -242,7 +310,7 @@ f(a, b) → (f a b)
           </section>
           <section>
             <h1>conde</h1>
-            О бесконечности:
+            <p>О бесконечности:</p>
             <pre><code class="clojure large" data-trim>
 (run 1 [q] (membero 1 q))
 ;; ((1 . _0))
@@ -250,7 +318,7 @@ f(a, b) → (f a b)
           </section>
           <section>
             <h1>conde</h1>
-            О бесконечности:
+            <p>О бесконечности:</p>
             <pre><code class="clojure large" data-trim>
 (run 2 [q] (membero 1 q))
 ;; ((1 . _0)
@@ -259,7 +327,7 @@ f(a, b) → (f a b)
           </section>
           <section>
             <h1>conde</h1>
-            О бесконечности:
+            <p>О бесконечности:</p>
             <pre><code class="clojure large" data-trim>
 (run 3 [q] (membero 1 q))
 ;; ((1 . _0)
@@ -268,24 +336,24 @@ f(a, b) → (f a b)
 
 (run* [q] (membero 1 q))  ; не завершается
             </code></pre>
-            Внутри — conde+рекурсия
+            <p>Внутри — conde+рекурсия</p>
           </section>
         </section>
 
         <section>
           <section>
             <h1>finite domains</h1>
-            Иногда нужно задать принадлежность к конечному домену:
+            <p>Иногда нужно задать принадлежность к конечному домену:</p>
             <pre><code class="clojure large" data-trim>
 (run* [q]
   (fd/in q (fd/interval 1 5)))
 ;; (1 2 3 4 5)
             </code></pre>
-            Бесконечные домены — WIP
+            <p>Бесконечные домены — WIP</p>
           </section>
           <section>
             <h1>finite domains</h1>
-            Арифметика:
+            <p>Арифметика:</p>
             <pre><code class="clojure large" data-trim>
 (run* [q]
   (fd/in q (fd/interval 0 100))
@@ -314,6 +382,9 @@ f(a, b) → (f a b)
           </section>
         </section>
 
+        <section>
+          FIXME: пример из lp is underrated с performance
+        </section>
 
         <section>
           <h1>Пример: packeto</h1>
