@@ -90,7 +90,7 @@
         </section>
 
         <section>
-          <section><h1>Clojure: очень коротко</h1></section>
+          <section><h1>Про Clojure: очень коротко</h1></section>
           <section>
             <pre><code data-trim class="no-highlight large">
 f(a, b) → (f a b)
@@ -103,7 +103,9 @@ f(a, b) → (f a b)
           </section>
           <section>
             <pre><code class="clojure large" data-trim>
-(def epic [:hello :joe :hello :mike]) ; вектор keyword'ов
+(def epic [:hello :joe
+           :hello :mike])
+;; вектор keyword'ов
             </code></pre>
           </section>
           <section>
@@ -117,7 +119,7 @@ f(a, b) → (f a b)
         <section>
           <h1>core.logic</h1>
           <ul>
-            <li>реализация miniKanren
+            <li>реализация miniKanren (<a href="http://minikanren.org/">minikanren.org</a> by William E. Byrd и Daniel P. Friedman)
             <li>=&gt; interleaved поиск (больше программ завершаются) FIXME (больше)
             <li>фокус на performance и интеграции с «обычным» кодом
           </ul>
