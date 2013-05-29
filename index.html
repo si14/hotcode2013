@@ -4,8 +4,7 @@
   <head>
 	<meta charset="utf-8">
 
-	<title>core.logic и Clojure
-    </title>
+	<title>core.logic и Clojure </title>
 
 	<meta name="description" content="Slides for HotCode 2013 talk">
 	<meta name="author" content="Dmitry Groshev">
@@ -37,12 +36,9 @@
   </head>
 
   <body>
-
 	<div class="reveal">
-
 	  <!-- Any section element inside of this container is displayed as a slide -->
 	  <div class="slides">
-
 		<section>
 		  <h1>core.logic</h1>
 		  <h3>Логическое программирование и Clojure</h3>
@@ -52,101 +48,112 @@
 		</section>
 
         <section>
-          <section><h1>Вступление</h1></section>
-          <section>
-            <h2>Логическое программирование</h2>
-            <ul>
-              <li>(бес)конечное множество возможных решений
-              <li>набор ограничений
-            </ul>
-          </section>
-          <section>
-            <h2>Например:</h2>
-            <ul>
-              <li>генерация непротиворечивого конфига
-              <li>разбор бинарных пакетов
-              <li>тестирование
-            </ul>
-            <p>Дальше — больше</p>
-          </section>
-          <section>
-            <h2>В докладе:</h2>
-            <ul>
-              <li>много нового
-              <li>мало сложного
-              <li>много примеров
-              <li>мало robust turn-key enterprise-grade scalable massively parallel fault-resistant REST NoSQL JS solutions
-            </ul>
-          </section>
-          <section>
-            <h2>План:</h2>
-            <ul>
-              <li>коротко о Clojure
-              <li>основные понятия core.logic
-              <li>примеры библиотек с core.logic внутри
-              <li>генерация деревьев разбора с core.logic
-            </ul>
-          </section>
+          <p>Что общего у</p>
+          <ul>
+            <li>автоматического рефакторинга,
+            <li>работы со временем,
+            <li>парсинга,
+            <li>тестирования?
+          </ul>
+          <br>
+          <h3>core.logic</h3>
         </section>
 
         <section>
-          <section><h1>Про Clojure: очень коротко</h1></section>
-          <section>
-            <pre><code data-trim class="no-highlight large">
+          <h1>Зачем мне ЛП?</h1>
+          <ul>
+            <li>удобно решать простые…
+            <li>возможно решать сложные…
+          </ul>
+          <p>…задачи</p>
+        </section>
+
+        <section>
+          <h1>Зачем мне этот доклад?</h1>
+          <ul>
+            <li>базовые концепции ЛП
+            <li>интуитивное представление о применимости
+            <li>«размагичивание»
+          </ul>
+        </section>
+
+        <section>
+          <h1>Сегодня:</h1>
+          <ul>
+            <li>основные понятия core.logic
+            <li>примеры использования core.logic
+            <li>пишем парсер
+          </ul>
+        </section>
+
+        <section>
+          <h1>Про core.logiс</h1>
+          <p>и немного про Clojure</p>
+        </section>
+
+        <section><h2>Clojure</h2></section>
+
+        <section>
+          <pre><code data-trim class="no-highlight large">
 f(a, b) → (f a b)
-            </code></pre>
-          </section>
-          <section>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <pre><code class="clojure large" data-trim>
 (def nums [ 1 2 3]) ; вектор
-            </code></pre>
-          </section>
-          <section>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <pre><code class="clojure large" data-trim>
 (def epic [:hello :joe
            :hello :mike])
 ;; вектор keyword'ов
-            </code></pre>
-          </section>
-          <section>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <pre><code class="clojure large" data-trim>
 (defn add-one [x] (+ x 1)) ; функция
 (add-one 41) ; 42
-            </code></pre>
-          </section>
+          </code></pre>
+        </section>
+
+        <section><h2>core.logic</h2></section>
+
+        <section>
+          <s>логическое</s> реляционное (relational):
+          <ul>
+            <li>(бес)конечное множество возможных решений
+            <li>набор ограничений/отношений
+          </ul>
         </section>
 
         <section>
           <h1>core.logic</h1>
           <ul>
-            <li>реализация miniKanren (<a href="http://minikanren.org/">minikanren.org</a> by William E. Byrd и Daniel P. Friedman)
+            <li>реализация miniKanren (<a href="http://minikanren.org/">minikanren.org</a> [Byrd, Friedman])
             <li>=&gt; interleaved поиск (больше программ завершаются) FIXME (больше)
             <li>фокус на performance и интеграции с «обычным» кодом
           </ul>
         </section>
 
-        <section><h1>О понятиях</h1></section>
-
         <section>
-          <section>
-            <h2>Logic variable</h2>
-            <ul>
-              <li>обозначает «какое-то» значение
-              <li>возможно, значение «любое значение»
-            </ul>
-            <pre><code class="no-highlight large" data-trim data-noescape>
+          <h2>Logic variable</h2>
+          <ul>
+            <li>обозначает «какое-то» значение
+            <li>возможно, значение «любое значение»
+          </ul>
+          <pre><code class="no-highlight large" data-trim data-noescape>
 [:a :b _0] ← третий элемент любой
 [_0 _0 _0] ← три любых <b>одинаковых</b> значения
 [_0 _1 _2] ← три любых значения
-            </code></pre>
-          </section>
-          <section>
-            <h2>Logic variable</h2>
-            <p>fresh предоставляет «свежие» переменные:</p>
-            <pre><code class="clojure large" data-trim data-noescape>
+          </code></pre>
+        </section>
+        <section>
+          <h2>Logic variable</h2>
+          <p>fresh предоставляет «свежие» переменные:</p>
+          <pre><code class="clojure large" data-trim data-noescape>
 (fresh [x y z] …)
-            </code></pre>
-          </section>
+          </code></pre>
         </section>
 
         <section>
@@ -162,231 +169,277 @@ f(a, b) → (f a b)
           <h2>Об именах</h2>
           <p>Если не указано обратное:</p>
           <ul>
-          <li>q — «спрашиваемая»
-          <li>a/b/c/x/y/z/… — «свежие»
+          <li>q — «спрашиваемая» (query var)
+          <li>a/b/c/x/y/z/… — «свежие» (fresh var)
           </ul>
         </section>
 
         <section>
-          <section>
-            <h2>Goal</h2>
-            <p>Почти обычная функция:</p>
-            <pre><code class="no-highlight large" data-trim>
+          <h2>Goal</h2>
+          <p>Почти обычная функция:</p>
+          <pre><code class="no-highlight large" data-trim>
 (f  &args) → result
 (f° &args) → success/failure
-            </code></pre>
-            <ul>
-              <li>результат всегда либо success, либо failure
-              <li>традиционно имеет постфикс °: goal°
-            </ul>
-          </section>
-          <section>
-            <h2>Goal</h2>
-            <pre><code class="no-highlight large" data-trim>
+          </code></pre>
+          <ul>
+            <li>результат всегда либо success, либо failure
+            <li>традиционно имеет постфикс °: goal°
+          </ul>
+        </section>
+        <section>
+          <h2>Goal</h2>
+          <pre><code class="no-highlight large" data-trim>
 (+  1 2) → 3
 (+° 1 2 3) → success
 (+° 1 2 4) → failure
 (+° 2 2 4) → success
-            </code></pre>
-          </section>
-          <section>
-            <h2>Goal</h2>
-            <p>Преобразование функции в goal:</p>
-            <pre><code class="no-highlight large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h2>Goal</h2>
+          <p>Преобразование функции в goal:</p>
+          <pre><code class="no-highlight large" data-trim>
 (f  &args) → result
 (f° &args result)
-            </code></pre>
-            <p>success, когда result = (f &args) и failure в обратном случае</p>
-          </section>
-          <section>
-            <h2>Goal</h2>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+          <p>success, когда result = (f &args) и failure в обратном случае</p>
+        </section>
+        <section>
+          <h2>Goal</h2>
+          <pre><code class="clojure large" data-trim>
 (+ 1 2) ; 3
 (run* [q] (fd/+ 1 2 q)) ; (3)
-            </code></pre>
-          </section>
-          <section>
-            <h2>Goal</h2>
-            <p>Больше, чем функция:</p>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h2>Goal</h2>
+          <p>Больше, чем функция:</p>
+          <pre><code class="clojure large" data-trim>
 (run* [q] (fd/+ 1 q 3)) ; (2)
-            </code></pre>
-            <ul>
-              <li>goal — ограничение на аргументы
-              <li>core.logic эффективно ищет удовлетворяющие значения
-            </ul>
-          </section>
+          </code></pre>
+          <ul>
+            <li>goal — ограничение на аргументы
+            <li>core.logic эффективно ищет удовлетворяющие значения
+          </ul>
         </section>
 
         <section>
-          <section>
-            <h2>Unification</h2>
-            <ul>
-              <li>ограничение вида «a = b»
-              <li>фундаментальный блок core.logic
+          <h2>Unification</h2>
+          <ul>
+            <li>ограничение вида «a = b»
+            <li>фундаментальный блок core.logic
             </ul>
-          </section>
-          <section>
-            <h2>Unification</h2>
-            <pre><code class="no-highlight large" data-trim>
+        </section>
+        <section>
+          <h2>Unification</h2>
+          <pre><code class="no-highlight large" data-trim>
 (== q 1)
   → q ~ (1)
-            </code></pre>
-          </section>
-          <section>
-            <h2>Unification</h2>
-            <pre><code class="no-highlight large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h2>Unification</h2>
+          <pre><code class="no-highlight large" data-trim>
 (== q a)
   → q ~ (_0)
-            </code></pre>
-          </section>
-          <section>
-            <h2>Unification</h2>
-            <pre><code class="no-highlight large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h2>Unification</h2>
+          <pre><code class="no-highlight large" data-trim>
 (== q [a b])
   → q ~ ([_0 _1])
-            </code></pre>
-          </section>
-          <section>
-            <h2>Unification</h2>
-            <pre><code class="no-highlight large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h2>Unification</h2>
+          <pre><code class="no-highlight large" data-trim>
 (== a b)
 (== q [a b])
   → q ~ ([_0 _0])
-            </code></pre>
-          </section>
-          <section>
-            <h2>Unification</h2>
-            <pre><code class="no-highlight large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h2>Unification</h2>
+          <pre><code class="no-highlight large" data-trim>
 (== a b)
 (== a 1)
 (== q [a b])
   → q ~ ([1 1])
-            </code></pre>
-          </section>
-          <section>
-            <h2>Unification</h2>
-            <p>Порядок не важен:</p>
-            <pre><code class="no-highlight large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h2>Unification</h2>
+          <p>Порядок не важен:</p>
+          <pre><code class="no-highlight large" data-trim>
 (== q [a b])
 (== a 1)
 (== a b)
   → q ~ ([1 1])
-            </code></pre>
-            <p>Это не «присваивание», а <em>ограничение</em> (== это goal)</p>
-          </section>
-          <section>
-            <h2>Unification</h2>
-            <p>Сложность и вложенность могут быть любыми:</p>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+          <p>Это не «присваивание», а <em>ограничение</em> (== это goal)</p>
+        </section>
+        <section>
+          <h2>Unification</h2>
+          <p>Сложность и вложенность могут быть любыми:</p>
+          <pre><code class="clojure large" data-trim>
 (run* [q]
   (fresh [x y]
     (== y :a)
     (== q [x [1 y 3] x])))
 ;; ([_0 [1 :a 3] _0])
-            </code></pre>
-          </section>
+          </code></pre>
         </section>
 
         <section>
-          <section>
-            <h1>conde</h1>
-            <p>Когда вариантов более одного:</p>
-            <pre><code class="clojure large" data-trim>
+          <h1>conde</h1>
+          <p>Когда вариантов более одного:</p>
+          <pre><code class="clojure large" data-trim>
 (run* [q]
   (conde
      [(== q 1)]
      [(== q 2)]))
 ;;(1 2)
-            </code></pre>
-          </section>
-          <section>
-            <h1>conde</h1>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h1>conde</h1>
+          <pre><code class="clojure large" data-trim>
 (run 1 [q]
   (conde
      [(== q 1)]
      [(== q 2)]))
 ;;(1) — порядок не определён
-            </code></pre>
-          </section>
-          <section>
-            <h1>conde</h1>
-            <p>О бесконечности:</p>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h1>conde</h1>
+          <p>О бесконечности:</p>
+          <pre><code class="clojure large" data-trim>
 (run 1 [q] (membero 1 q))
 ;; ((1 . _0))
-            </code></pre>
-          </section>
-          <section>
-            <h1>conde</h1>
-            <p>О бесконечности:</p>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h1>conde</h1>
+          <p>О бесконечности:</p>
+          <pre><code class="clojure large" data-trim>
 (run 2 [q] (membero 1 q))
 ;; ((1 . _0)
 ;;  (_0 1 . _1))
-            </code></pre>
-          </section>
-          <section>
-            <h1>conde</h1>
-            <p>О бесконечности:</p>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h1>conde</h1>
+          <p>О бесконечности:</p>
+          <pre><code class="clojure large" data-trim>
 (run 3 [q] (membero 1 q))
 ;; ((1 . _0)
 ;;  (_0 1 . _1)
 ;;  (_0 _1 1 . _2))
 
 (run* [q] (membero 1 q))  ; не завершается
-            </code></pre>
-            <p>Внутри — conde+рекурсия</p>
-          </section>
+          </code></pre>
+          <p>Внутри — conde+рекурсия</p>
         </section>
 
         <section>
-          <section>
-            <h1>finite domains</h1>
-            <p>Иногда нужно задать принадлежность к конечному домену:</p>
-            <pre><code class="clojure large" data-trim>
+          <h1>finite domains</h1>
+          <p>Иногда нужно явно задать принадлежность к конечному домену:</p>
+          <pre><code class="clojure large" data-trim>
 (run* [q]
   (fd/in q (fd/interval 1 5)))
 ;; (1 2 3 4 5)
-            </code></pre>
-            <p>Бесконечные домены — WIP</p>
-          </section>
-          <section>
-            <h1>finite domains</h1>
-            <p>Арифметика:</p>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+          <p>Бесконечные домены — WIP</p>
+        </section>
+        <section>
+          <h1>finite domains</h1>
+          <p>Арифметика:</p>
+          <pre><code class="clojure large" data-trim>
 (run* [q]
   (fd/in q (fd/interval 0 100))
   (fd/+ q q 10)) ; q + q = 10
 ;; (5)
-            </code></pre>
-          </section>
-          <section>
-            <h1>finite domains</h1>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h1>finite domains</h1>
+          <pre><code class="clojure large" data-trim>
 (run* [q]
   (fd/in q (fd/interval 0 100))
   (fd/+ q q q)) ; q + q = q
 ;; (0)
-            </code></pre>
-          </section>
-          <section>
-            <h1>finite domains</h1>
-            <pre><code class="clojure large" data-trim>
+          </code></pre>
+        </section>
+        <section>
+          <h1>finite domains</h1>
+          <pre><code class="clojure large" data-trim>
 (run* [a b]
   (fd/in a b (fd/interval 0 100))
   (fd/+ a b 3)
   (== q [a b]))
 ;; ([0 3] [1 2] [2 1] [3 0])
-            </code></pre>
-          </section>
+          </code></pre>
         </section>
 
         <section>
-          FIXME: пример из lp is underrated с performance
+          <h1>Зачем всё это нужно</h1>
+          <p>примеры</p>
         </section>
+
+        <section>
+          <h2>packeto</h2>
+        </section>
+
+        <section>
+          <p>Erlang:</p>
+          <pre><code class="no-highlight large" data-trim>
+&lt;&lt;Size:4/binary, C:Size, _Rest&gt;&gt; = Data.
+          </code></pre>
+        </section>
+
+        <section>
+          <p>core.logic + packeto:</p>
+          <pre><code class="clojure large">
+    (packeto [ 1 0 0 1 0 1 0 1 1 1 1 1 ]
+             [:binary 4 b
+              :chunk 6 c
+              :chunk rest-size rest-chunk])</code></pre>
+        </section>
+
+        <section>
+          <p>core.logic + packeto:</p>
+          <pre><code class="clojure large">
+    (packeto [ 1 0 0 1 0 1 0 1 1 1 1 1 ]
+             [:binary 4 b
+              :chunk  b c ;; 6 → b
+              :chunk  rest-size rest-chunk])</code></pre>
+        </section>
+
+        <section>
+          <p>core.logic + packeto:</p>
+          <pre><code class="clojure large" data-trim>
+(run 1 [c rest-size rest-chunk]
+    (packeto [ 1 0 0 1 0 1 0 1 1 1 1 1 ]
+             [:binary 4 b
+              :chunk  b c
+              :chunk  rest-size rest-chunk]))</code></pre>
+        </section>
+
+        <section>
+          <p>Не только парсер:</p>
+          <pre><code class="clojure large" data-trim>
+(run 1 [pck]
+    (fresh [l]
+        (packeto pck
+                 [:binary 4 l
+                  :chunk  l [ 0 1 0 1 0 1 ]]))
+          </code></pre>
+          <p>packeto — relation, любые аргументы могут быть «спрашиваемыми»</p>
+        </section>
+
+        <section><h2>kibit</h2></section>
 
         <section>
           <h1>Пример: packeto</h1>
