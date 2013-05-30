@@ -76,7 +76,6 @@
           <ul>
             <li>базовые концепции ЛП
             <li>интуитивное представление о применимости
-            <li>«размагичивание»
           </ul>
         </section>
 
@@ -153,10 +152,20 @@ f(a, b) → (f a b)
         </section>
         <section>
           <h2>Logic variable</h2>
-          <p>fresh предоставляет «свежие» переменные:</p>
+          <p>fresh предоставляет «свежие» логические переменные:</p>
           <pre><code class="clojure large" data-trim data-noescape>
 (fresh [x y z] …)
           </code></pre>
+          <p>«свежие» = без ограничений</p>
+        </section>
+
+        <section>
+          <h2>Об именах</h2>
+          <p>Если не указано обратное:</p>
+          <ul>
+          <li>q — «спрашиваемая» (query variable)
+          <li>a/b/c/x/y/z/… — «свежие» (fresh variable)
+          </ul>
         </section>
 
         <section>
@@ -166,15 +175,7 @@ f(a, b) → (f a b)
             <li>(run N [q] …) возвращает [0…N] значений q
             <li>(run* [q] …) возвращает [0…∞) значений q
           </ul>
-        </section>
-
-        <section>
-          <h2>Об именах</h2>
-          <p>Если не указано обратное:</p>
-          <ul>
-          <li>q — «спрашиваемая» (query var)
-          <li>a/b/c/x/y/z/… — «свежие» (fresh var)
-          </ul>
+          <p>q — «спрашиваемая»</p>
         </section>
 
         <section>
@@ -186,7 +187,7 @@ f(a, b) → (f a b)
           </code></pre>
           <ul>
             <li>результат всегда либо success, либо failure
-            <li>традиционно имеет постфикс °: goal°
+            <li>традиционно имеет суффикс °: goal°
           </ul>
         </section>
         <section>
@@ -222,7 +223,7 @@ f(a, b) → (f a b)
           </code></pre>
           <ul>
             <li>goal — ограничение на аргументы
-            <li>core.logic эффективно ищет удовлетворяющие значения
+            <li>core.logic эффективно ищет значения, удовлетворяющие всем ограничениям
           </ul>
         </section>
 
@@ -295,7 +296,7 @@ f(a, b) → (f a b)
         </section>
 
         <section>
-          <h1>conde</h1>
+          <h2>conde</h2>
           <p>Когда вариантов более одного:</p>
           <pre><code class="clojure large" data-trim>
 (run* [q]
@@ -306,7 +307,7 @@ f(a, b) → (f a b)
           </code></pre>
         </section>
         <section>
-          <h1>conde</h1>
+          <h2>conde</h2>
           <pre><code class="clojure large" data-trim>
 (run 1 [q]
   (conde
@@ -316,7 +317,7 @@ f(a, b) → (f a b)
           </code></pre>
         </section>
         <section>
-          <h1>conde</h1>
+          <h2>conde</h2>
           <p>О бесконечности:</p>
           <pre><code class="clojure large" data-trim>
 (run 1 [q] (membero 1 q))
@@ -324,7 +325,7 @@ f(a, b) → (f a b)
           </code></pre>
         </section>
         <section>
-          <h1>conde</h1>
+          <h2>conde</h2>
           <p>О бесконечности:</p>
           <pre><code class="clojure large" data-trim>
 (run 2 [q] (membero 1 q))
@@ -333,7 +334,7 @@ f(a, b) → (f a b)
           </code></pre>
         </section>
         <section>
-          <h1>conde</h1>
+          <h2>conde</h2>
           <p>О бесконечности:</p>
           <pre><code class="clojure large" data-trim>
 (run 3 [q] (membero 1 q))
@@ -347,17 +348,17 @@ f(a, b) → (f a b)
         </section>
 
         <section>
-          <h1>finite domains</h1>
-          <p>Иногда нужно явно задать принадлежность к конечному домену:</p>
+          <h2>finite domains</h2>
+          <p>Иногда нужно явно задать принадлежность к конечному домену целых чисел:</p>
           <pre><code class="clojure large" data-trim>
 (run* [q]
   (fd/in q (fd/interval 1 5)))
 ;; (1 2 3 4 5)
           </code></pre>
-          <p>Бесконечные домены — WIP</p>
+          <p>Бесконечные домены, операции над множествами — WIP</p>
         </section>
         <section>
-          <h1>finite domains</h1>
+          <h2>finite domains</h2>
           <p>Арифметика:</p>
           <pre><code class="clojure large" data-trim>
 (run* [q]
@@ -367,7 +368,7 @@ f(a, b) → (f a b)
           </code></pre>
         </section>
         <section>
-          <h1>finite domains</h1>
+          <h2>finite domains</h2>
           <pre><code class="clojure large" data-trim>
 (run* [q]
   (fd/in q (fd/interval 0 100))
@@ -376,7 +377,7 @@ f(a, b) → (f a b)
           </code></pre>
         </section>
         <section>
-          <h1>finite domains</h1>
+          <h2>finite domains</h2>
           <pre><code class="clojure large" data-trim>
 (run* [a b]
   (fd/in a b (fd/interval 0 100))
@@ -393,9 +394,11 @@ f(a, b) → (f a b)
 
         <section>
           <h2>packeto</h2>
+          <p>Парсинг и упаковка бинарных данных</p>
         </section>
 
         <section>
+          <h2>packeto</h2>
           <p>Erlang:</p>
           <pre><code class="no-highlight large" data-trim>
 &lt;&lt;Size:4/binary, C:Size, _Rest&gt;&gt; = Data.
@@ -403,24 +406,29 @@ f(a, b) → (f a b)
         </section>
 
         <section>
+          <h2>packeto</h2>
           <p>core.logic + packeto:</p>
-          <pre><code class="clojure large">
+          <pre><code class="clojure large" data-trim>
     (packeto [ 1 0 0 1 0 1 0 1 1 1 1 1 ]
              [:binary 4 b
               :chunk 6 c
-              :chunk rest-size rest-chunk])</code></pre>
+              :chunk rest-size rest-chunk])
+          </code></pre>
         </section>
 
         <section>
+          <h2>packeto</h2>
           <p>core.logic + packeto:</p>
-          <pre><code class="clojure large">
+          <pre><code class="clojure large" data-trim>
     (packeto [ 1 0 0 1 0 1 0 1 1 1 1 1 ]
              [:binary 4 b
               :chunk  b c ;; 6 → b
-              :chunk  rest-size rest-chunk])</code></pre>
+              :chunk  rest-size rest-chunk])
+          </code></pre>
         </section>
 
         <section>
+          <h2>packeto</h2>
           <p>core.logic + packeto:</p>
           <pre><code class="clojure large" data-trim>
 (run 1 [c rest-size rest-chunk]
@@ -431,6 +439,7 @@ f(a, b) → (f a b)
         </section>
 
         <section>
+          <h2>packeto</h2>
           <p>Не только парсер:</p>
           <pre><code class="clojure large" data-trim>
 (run 1 [pck]
@@ -442,7 +451,96 @@ f(a, b) → (f a b)
           <p>packeto — relation, любые аргументы могут быть «спрашиваемыми»</p>
         </section>
 
-        <section><h2>kibit</h2></section>
+        <section>
+          <h2>kibit</h2>
+          <p>Автоматический рефакторинг</p>
+        </section>
+
+        <section>
+          <h2>kibit</h2>
+          <pre><code class="no-highlight large" data-trim>
+At …/core.clj:26:
+Consider using:
+  (vec term-rules)
+instead of:
+  (into [] term-rules)
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>kibit</h2>
+          <pre><code class="no-highlight large" data-trim>
+At …/core.clj:135:
+Consider using:
+  (update-in acc [?key] (fnil + 0) n)
+instead of:
+  (assoc acc child ((fnil + 0) (acc child) n))
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>kibit</h2>
+          <p>Никакой магии:</p>
+          <pre><code class="clojure large" data-trim>
+(defn simplify-one [expr rules]
+  (let [alts (logic/run* [q]
+               (logic/fresh [pat subst]
+                 (logic/membero [pat subst]
+                                rules)
+                 (logic/project [pat subst]
+                   (logic/all (pat expr)
+                              (subst q)))))]
+    (if (empty? alts) expr (first alts))))
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>webdriver-logic</h2>
+          <p>Тестирование в браузере с Selenium и core.logic</p>
+        </section>
+
+        <section>
+          <h2>webdriver-logic</h2>
+          <pre><code class="clojure large" data-trim>
+(run* [q]
+    (attributeo q :class "footer_nav"))
+          </code></pre>
+          <p>→ все элементы с классом footer_nav</p>
+        </section>
+
+        <section>
+          <h2>webdriver-logic</h2>
+          <pre><code class="clojure large" data-trim>
+(run 3 [q]
+  (fresh [an-element a-value]
+    (attributeo an-element :id q)
+    (!= q nil)
+    (!= q "")))
+          </code></pre>
+          <p>→ 3 первых непустых id</p>
+        </section>
+
+        <section>
+          <h2>webdriver-logic</h2>
+          <pre><code class="clojure large" data-trim>
+;; …задание header-div и footer-div…
+(run* [q]
+   (fresh [header-a footer-a href-val]
+          (attributeo header-a :href href-val)
+          (attributeo footer-a :href href-val)
+          (!= href-val nil)
+          (!= href-val "")
+          (childo header-a header-div)
+          (childo footer-a footer-div)
+          (== q [header-a footer-a])))
+          </code></pre>
+          <p>проверка равенства ссылок в header'е и footer'е</p>
+        </section>
+
+        <section>
+          <h2>monotony</h2>
+          <p>Простая работа со временем</p>
+        </section>
 
         <section>
           <h1>Пример: packeto</h1>
