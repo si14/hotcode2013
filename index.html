@@ -539,23 +539,164 @@ instead of:
 
         <section>
           <h2>monotony</h2>
-          <p>Простая работа со временем</p>
+          <p>Простая работа с повторяющимися событиями</p>
         </section>
 
         <section>
-          <h1>Пример: packeto</h1>
-          kibit
-          webdriver-logic
-          monotony
+          <h2>monotony</h2>
+          <pre><code class="clojure large" data-trim>
+(defn third-wednesday [month] …)
+(defn six-pm [day] …)
+(take 3 (map (comp six-pm third-wednesday)
+             (m/periods :month)))
+          </code></pre>
         </section>
 
         <section>
-          <h1>Пример: деревья разбора для CFG</h1>
+          <h2>monotony</h2>
+          <pre><code class="clojure large" data-trim>
+(l/defne containso [cycle1 cycle2 out]
+  …
+  (l/fresh [millis1 millis2]
+     (millis-ino cycle1 millis1)
+     (millis-ino cycle2 millis2)
+     (la/&gt; millis1 millis2))
+  …)
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>monotony</h2>
+          <p>Профит:</p>
+          <pre><code class="clojure large" data-trim>
+(defn cycle-contains? [cycle1 cycle2]
+  (first (l/run 1 [q]
+            (containso cycle1 cycle2 q))))
+
+(defn cycles-in [cycle]
+  (set (l/run* [q]
+          (containso cycle q true))))
+          </code></pre>
+        </section>
+
+        <section>
+          <h1>Пишем парсер</h1>
+        </section>
+
+        <section>
+          <h2>Задача</h2>
+          <p>Правила генерации строки:</p>
+          <pre><code class="no-highlight large" data-trim>
+a → b c
+b → b b
+c → b c
+
+b → b'
+c → c'
+          </code></pre>
+          <p>Строка:</p>
+          <pre><code class="no-highlight large" data-trim>
+b' b' b' c'
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Clojure</h2>
+          <pre><code class="clojure large" data-trim>
+;; нетерминальные правила
+(def nonterm-rules {:a [:b :c]
+                :b [:b :b]
+                :c [:b :c]})
+;; терминальные правила
+(def term-rules {:b :b-term
+            :c :c-term})
+(def terms [:b-term :b-term :b-term :c-term])
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>nodeo</h2>
+          <p>Очередной шаг генерации:</p>
+          <ul>
+            <li>нетерминальное правило
+            <li>терминальное правило
+          </ul>
+        </section>
+
+        <section>
+          <h2>nodeo</h2>
+          <p>Терминальное правило</p>
+          <pre><code class="clojure large" data-trim>
+(defn node-termo [node terms]
+  (fresh [term]
+         (membero [node term] term-rules)
+         (== terms [term])))
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>nodeo</h2>
+          <p>Нетерминальное правило</p>
+          <pre><code class="clojure large" data-trim>
+(defn node-nontermo [node terms]
+  (fresh [sub1 sub2 terms1 terms2]
+     (membero [node sub1 sub2] nonterm-rules)
+     (appendo terms1 terms2 terms)
+     (??? sub1 terms1)
+     (??? sub2 terms2)))
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>nodeo</h2>
+          <pre><code class="clojure large" data-trim>
+(defn nodeo [node terms]
+  (conde [(node-termo node terms)]
+         [(node-nontermo node terms)]))
+
+(defn node-nontermo [node terms]
+  (fresh [sub1 sub2 terms1 terms2]
+     (membero [node sub1 sub2] nonterm-rules)
+     (appendo terms1 terms2 terms)
+     (nodeo sub1 terms1)
+     (nodeo sub2 terms2)))
+          </code></pre>
+        </section>
+
+        <section>
+          <h2>Не работает :(</h2>
+        </section>
+
+        <section>
+          <h2>nodeo</h2>
+          <pre><code class="clojure large" data-trim>
+(defn node-nontermo [node terms]
+  (fresh [sub1 sub2 terms1 terms2]
+     (membero [node sub1 sub2] nonterm-rules)
+     (appendo terms1 terms2 terms) ; !!!
+     (nodeo sub1 terms1)
+     (nodeo sub2 terms2)))
+          </code></pre>
+          <p>len(terms1) + len(terms2) = len(terms)</p>
+        </section>
+
+        <section>
+          <h2>nodeo</h2>
+          <pre><code class="clojure large" data-trim>
+(defn node-nontermo [node terms n]
+  (fresh [sub1 sub2 terms1 terms2 n1 n2]
+     (membero [node sub1 sub2] nonterm-rules)
+     (fd/in n1 n2 (fd/interval 1 max-len))
+     (fd/+ n1 n2 n)
+     (appendo terms1 terms2 terms)
+     (nodeo sub1 terms1 n1)
+     (nodeo sub2 terms2 n2)))
+          </code></pre>
+          <p>Автоматизация — WIP</p>
         </section>
 
 
 	  </div>
-
 	</div>
 
 	<script src="lib/js/head.min.js"></script>
